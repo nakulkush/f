@@ -1,8 +1,8 @@
 from setuptools import setup
 
 setup(
-    name='labcode',
+    name='f',
     version='0.1',
-    py_modules=['labcode'],
+    py_modules=['f'],
     install_requires=[],
 )
