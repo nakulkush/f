@@ -1,5 +1,10 @@
 # f.py
 
+def fname():
+    return """
+    lib,csv,dfs1,dfs2,bfs1,befs1,befs2,befs3,befs4,astar1,astar2,astar3,astar4,fs1,fs2,fs3,tp1,tp2,ohe1,bow1,tfidf1,mlp1,mlp2,mlp3,mlp4,mlp5,nim1,nim2
+    """
+
 def lib():
     return """
 import pandas as pd
