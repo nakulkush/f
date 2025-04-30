@@ -1,3 +1,9 @@
+#datasets
+https://www.kaggle.com/datasets/pablomgomez21/drugs-a-b-c-x-y-for-decision-trees
+https://www.kaggle.com/datasets/vjchoudhary7/customer-segmentation-tutorial-in-python
+https://www.kaggle.com/datasets/heeraldedhia/groceries-dataset
+
+
 # Title: Decision Tree Classifier for Drug Classification
 # Import libraries
 import pandas as pd
