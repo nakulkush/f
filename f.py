@@ -1,971 +1,356 @@
-# f.py
-
-def fname():
-    return """
-    lib,csv,dfs1,dfs2,bfs1,befs1,befs2,befs3,befs4,astar1,astar2,astar3,astar4,fs1,fs2,fs3,tp1,tp2,ohe1,bow1,tfidf1,mlp1,mlp2,mlp3,mlp4,mlp5,nim1,nim2
-    """
-
-def lib():
-    return """
+# Title: Decision Tree Classifier for Drug Classification
+# Import libraries
 import pandas as pd
-import networkx as nx
 import matplotlib.pyplot as plt
-import heapq
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.metrics import classification_report, accuracy_score
 
+# Load dataset
+data = pd.read_csv("/content/drug200.csv")
 
+# Drop duplicates
+data.drop_duplicates(inplace=True)
 
-tp1
-import re
-import nltk  
-from nltk.tokenize import word_tokenize
-from nltk.corpus import stopwords
-from spellchecker import SpellChecker
+# Label encode categorical variables
+le = LabelEncoder()
+data["Sex"] = le.fit_transform(data["Sex"])            # Female=0, Male=1
+data["BP"] = le.fit_transform(data["BP"])              # High/Low/Normal
+data["Cholesterol"] = le.fit_transform(data["Cholesterol"])  # High/Normal
 
-# Download NLTK resources
-nltk.download('punkt')
-nltk.download('punkt_tab')
-nltk.download('stopwords')
+# Define features and target
+X = data[['Age', 'Sex', 'BP', 'Cholesterol', 'Na_to_K']]
+y = data['Drug']  # No one-hot encoding needed for DecisionTreeClassifier
 
+# Train-test split
+x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.25, stratify=y, random_state=42)
 
-tp2
-import re
-import nltk
-from nltk.tokenize import word_tokenize
-from nltk.corpus import stopwords
-from nltk.stem import PorterStemmer, WordNetLemmatizer
-from nltk.util import ngrams
+# Train Decision Tree model
+dt = DecisionTreeClassifier(random_state=42)
+dt.fit(x_train, y_train)
 
-nltk.download('punkt')
-nltk.download('stopwords')
-nltk.download('wordnet')
-nltk.download('punkt_tab')
-
-
-ohe
-import re
-import nltk
-import numpy as np
-from nltk.tokenize import word_tokenize
-
-nltk.download('punkt')
-nltk.download('punkt_tab')
-
-
-bow
-import re
-from nltk.tokenize import word_tokenize
-import nltk
-from collections import Counter
-
-# Download necessary NLTK data
-nltk.download('punkt')
-nltk.download('punkt_tab')
-
-
-tfidf
-import re
-from sklearn.feature_extraction.text import TfidfVectorizer
-
-
-mlp
-import numpy as np
-import itertools
-
-
-
-    """
-
-
-def csv():
-    return """
-source,target,weight
-a b 1
-a c 4
-b c 2
-b d 3
-c e 5
-d g 4
-d f 2
-e g 3
-f g 1
-
-
-heuristic,heuristic
-a 5
-b 6
-c 4
-d 3
-e 3
-g 0
-f 1
-
-start a
-goal g
-
-    """
-
-def dfs1():
-    return """
-
-# Implement Recursive Depth First Search Algorithm. Read the undirected 
-# unweighted graph from a .csv file. 
-import pandas as pd
-import networkx as nx
-
-df = pd.read_csv('dfs.csv')
-G = nx.Graph()
-for _, row in df.iterrows():
-    G.add_edge(row['source'], row['target'])
-
-def recursive_dfs(graph, node, visited):
-    visited.append(node)
-    for neighbor in graph.neighbors(node):
-        if neighbor not in visited:
-            recursive_dfs(graph, neighbor, visited)
-    return visited
-
-start_node = input("Enter starting node: ")
-visited_nodes = recursive_dfs(G, start_node, [])
-
-print("DFS Traversal:", visited_nodes)
-
-    """
-
-def dfs2():
-    return """
-
-    
-# Implement Non-Recursive Depth First Search Algorithm. Read the 
-# undirected unweighted graph from user.  
-import networkx as nx
-import matplotlib.pyplot as plt
-
-def non_recursive_dfs(G, start):
-    visited = []
-    stack = [start]
-    while stack:
-        node = stack.pop()
-        if node not in visited:
-            visited.append(node)
-            stack.extend(neighbor for neighbor in G.neighbors(node) if neighbor not in visited)
-    return visited
-
-G = nx.Graph()
-num_edges = int(input("Number of edges: "))
-
-for _ in range(num_edges):
-    node1, node2 = input("Enter edge (node1 node2): ").split()
-    G.add_edge(node1, node2)
-
-# DFS and plot
-start_node = input("Start node: ")
-visited_nodes = non_recursive_dfs(G, start_node)
-
-print("Visited:", visited_nodes)
-
-nx.draw(G, with_labels=True, node_color='lightgreen', node_size=1000)
-plt.show()
-    
-    
-    """
-
-
-def bfs1():
-    return """
-
-# Implement Breadth First Search Algorithm. Read the undirected 
-# unweighted graph from user.  
-import networkx as nx
-import matplotlib.pyplot as plt
-
-G = nx.Graph()
-num_edges = int(input("Number of edges: "))
-for _ in range(num_edges):
-    u, v = input("Enter edge (node1 node2): ").split()
-    G.add_edge(u, v)
-
-def bfs(G, start):
-    visited = []
-    queue = [start]
-    while queue:
-        node = queue.pop(0)
-        if node not in visited:
-            visited.append(node)
-            queue.extend(n for n in G.neighbors(node) if n not in visited)
-    print("Visited:", visited)
-
-start_node = input("Start node: ")
-bfs(G, start_node)
-
-nx.draw(G, with_labels=True, node_color='skyblue', node_size=1000)
+# Visualize the decision tree
+plt.figure(figsize=(16, 8))
+plot_tree(dt, filled=True, feature_names=X.columns, class_names=dt.classes_)
 plt.show()
 
-    """
+# Evaluate the model
+y_pred = dt.predict(x_test)
 
-def befs1():
-    return """
+# Print classification metrics
+print("Classification Report:")
+print(classification_report(y_test, y_pred))
 
-# Implement Best First Search Algorithm. Read the directed unweighted 
-# graph and the heuristic values from user. 
-import heapq
-import networkx as nx
-
-def best_first_search(graph, heuristic, start, goal):
-    heap = []
-    heapq.heappush(heap, (heuristic[start], [start]))  # Push start node
-
-    while heap:
-        cost, path = heapq.heappop(heap)
-        node = path[0]
-        if node == goal:
-            return path[::-1]
-        for neighbor in graph.neighbors(node):  
-            if neighbor not in path:
-                heapq.heappush(heap, (heuristic[neighbor], [neighbor] + path))
-     
-    return None
-
-G = nx.DiGraph()
-n = int(input("Enter number of edges: "))
-for _ in range(n):
-    u, v = input("Enter edge (from to): ").split()
-    G.add_edge(u, v)
-
-heuristic = {}
-for node in G.nodes():
-    heuristic[node] = int(input(f"Enter heuristic for {node}: "))
+# Print accuracy
+print("Accuracy:", accuracy_score(y_test, y_pred))
 
 
-start = input("Enter start node: ")
-goal = input("Enter goal node: ")
-path = best_first_search(G, heuristic, start, goal)
-print("Path:", path)
-    """
-
-def befs2():
-    return """
-
-# Implement Best First Search Algorithm. Read the undirected weighted 
-# graph and the heuristic values from user. 
-import heapq
-import networkx as nx
-
-def best_first_search(graph, heuristic, start, goal):
-    heap = []
-    heapq.heappush(heap, (heuristic[start], [start]))
-
-    while heap:
-        cost, path = heapq.heappop(heap)
-        node = path[0]
-        
-        if node == goal:
-            return path[::-1]
-        
-        for neighbor in graph.neighbors(node):
-            if neighbor not in path:
-                heapq.heappush(heap, (heuristic[neighbor], [neighbor] + path))
-    
-    return None
-
-G = nx.Graph()
-n = int(input("Enter number of edges: "))
-for _ in range(n):
-    u, v, w = input("Enter edge (from to weight): ").split()
-    G.add_edge(u, v, weight=int(w))
-
-heuristic = {}
-for node in G.nodes():
-    heuristic[node] = int(input(f"Enter heuristic for {node}: "))
-
-start = input("Enter start node: ")
-goal = input("Enter goal node: ")
-
-path = best_first_search(G, heuristic, start, goal)
-
-if path:
-    print("Path:", path)
-else:
-    print("No path found")
 
 
-    """
-
-
-def befs3():
-    return """
-# Implement Best First Search Algorithm. Read the undirected unweighted 
-# graph and the heuristic values from user.
-
-import heapq
-import networkx as nx
-
-def best_first_search(graph, heuristic, start, goal):
-    heap = []
-    heapq.heappush(heap, (heuristic[start], [start]))
-
-    while heap:
-        _, path = heapq.heappop(heap)
-        node = path[0]
-        
-        if node == goal:
-            return path[::-1]
-        
-        for neighbor in graph.neighbors(node):
-            if neighbor not in path:
-                heapq.heappush(heap, (heuristic[neighbor], [neighbor] + path))
-    
-    return None
-
-G = nx.Graph()
-n = int(input("Enter number of edges: "))
-for _ in range(n):
-    u, v = input("Enter edge (from to): ").split()
-    G.add_edge(u, v)
-
-heuristic = {}
-for node in G.nodes():
-    heuristic[node] = int(input(f"Enter heuristic for {node}: "))
-
-start = input("Enter start node: ")
-goal = input("Enter goal node: ")
-
-path = best_first_search(G, heuristic, start, goal)
-
-if path:
-    print("Path:", path)
-else:
-    print("No path found")
-
-
-    """
-
-def befs4():
-    return """
-
-# Implement Best First Search Algorithm. Read the directed weighted graph 
-# and the heuristic values from user. 
-import heapq
-import networkx as nx
-
-def best_first_search(graph, heuristic, start, goal):
-    heap = []
-    heapq.heappush(heap, (heuristic[start], [start]))
-
-    while heap:
-        cost, path = heapq.heappop(heap)
-        node = path[0]
-        
-        if node == goal:
-            return path[::-1]
-        
-        for neighbor in graph.neighbors(node):
-            if neighbor not in path:
-                heapq.heappush(heap, (heuristic[neighbor], [neighbor] + path))
-    
-    return None
-
-G = nx.DiGraph()
-
-n = int(input("Enter number of edges: "))
-for _ in range(n):
-    u, v, w = input("Enter edge (from to weight): ").split()
-    G.add_edge(u, v, weight=int(w))
-
-heuristic = {}
-for node in G.nodes():
-    heuristic[node] = int(input(f"Enter heuristic for {node}: "))
-
-start = input("Enter start node: ")
-goal = input("Enter goal node: ")
-
-path = best_first_search(G, heuristic, start, goal)
-
-if path:
-    print("Path:", path)
-else:
-    print("No path found")
-
-    """
-
-def astar1():
-    return """
-
-    # Implement A* algorithm. Read directed weighted graph and heuristic 
-# values from a .csv file. 
-
+#Naive Bayes Classifier for Drug Classification
+# Import necessary libraries
 import pandas as pd
-import networkx as nx
-import heapq
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import classification_report, accuracy_score
 
-def astar(graph, heuristic, start, goal):
-    heap = []
-    heapq.heappush(heap, (0 + heuristic[start], 0, [start]))
+# Load dataset
+data = pd.read_csv("/content/drug200.csv")
 
-    while heap:
-        f_cost, g_cost, path = heapq.heappop(heap)
-        node = path[-1]
-        if node == goal:
-            return path
-        for neighbor in graph.neighbors(node):
-            if neighbor not in path:
-                edge_weight = graph[node][neighbor]['weight']
-                heapq.heappush(heap, (g_cost + edge_weight + heuristic[neighbor], g_cost + edge_weight, path + [neighbor]))
-    return None
+# Drop duplicates
+data.drop_duplicates(inplace=True)
 
-# Read graph from CSV
-df = pd.read_csv('graphAstar.csv')  
-heuristic = pd.read_csv('heuristicAstar.csv', index_col=0).to_dict()['heuristic']  
+# Label encode categorical variables
+le = LabelEncoder()
+data["Sex"] = le.fit_transform(data["Sex"])            # Female=0, Male=1
+data["BP"] = le.fit_transform(data["BP"])              # High=0, Low=1, Normal=2
+data["Cholesterol"] = le.fit_transform(data["Cholesterol"])  # High=0, Normal=1
 
-G = nx.DiGraph()
-for _, r in df.iterrows():
-    G.add_edge(r['source'], r['target'], weight=r['weight'])
+# Define features and target
+X = data[['Age', 'Sex', 'BP', 'Cholesterol', 'Na_to_K']]
+y = data['Drug']  # Target is categorical but NOT one-hot encoded
 
-start = input("Enter start node: ")
-goal = input("Enter goal node: ")
+# Split the data
+x_train, x_test, y_train, y_test = train_test_split(X, y, stratify=y, test_size=0.25, random_state=42)
 
-path = astar(G, heuristic, start, goal)
-print("Path:", path)
+# Train Naive Bayes classifier
+nb = GaussianNB()
+nb.fit(x_train, y_train)
 
+# Predict and evaluate
+y_pred = nb.predict(x_test)
 
-"""
+# Print classification report
+print("Classification Report (Naive Bayes):")
+print(classification_report(y_test, y_pred))
 
-def astar2():
-    return """
-# Implement A* algorithm. Read directed weighted graph and heuristic 
-# values from user. 
-
-import networkx as nx
-import heapq
-
-def astar(graph, heuristic, start, goal):
-    heap = []
-    heapq.heappush(heap, (0 + heuristic[start], 0, [start]))
-
-    while heap:
-        f_cost, g_cost, path = heapq.heappop(heap)
-        node = path[-1]
-        if node == goal:
-            return path
-        for neighbor in graph.neighbors(node):
-            if neighbor not in path:
-                edge_weight = graph[node][neighbor]['weight']
-                heapq.heappush(heap, (g_cost + edge_weight + heuristic[neighbor], g_cost + edge_weight, path + [neighbor]))
-    return None
-
-G = nx.DiGraph()
-n = int(input("Enter number of edges: "))
-for _ in range(n):
-    u, v, w = input("Enter edge (source target weight): ").split()
-    G.add_edge(u, v, weight=int(w))
-
-heuristic = {}
-for node in G.nodes():
-    heuristic[node] = int(input(f"Enter heuristic for {node}: "))
-
-start = input("Enter start node: ")
-goal = input("Enter goal node: ")
-
-path = astar(G, heuristic, start, goal)
-print("Path:", path)
+# Print accuracy
+print("Accuracy (Naive Bayes):", accuracy_score(y_test, y_pred))
 
 
 
-    """
 
 
-def astar3():
-    return """
-# Implement A* algorithm. Read undirected weighted graph and heuristic 
-# values from a .csv file.
+
+
+
+
+
+
+
+# Apriori Algorithm for Association Rule Mining
 import pandas as pd
-import networkx as nx
-import heapq
-
-def astar(graph, heuristic, start, goal):
-    heap = []
-    heapq.heappush(heap, (0 + heuristic[start], 0, [start]))
-
-    while heap:
-        f_cost, g_cost, path = heapq.heappop(heap)
-        node = path[-1]
-        if node == goal:
-            return path
-        for neighbor in graph.neighbors(node):
-            if neighbor not in path:
-                edge_weight = graph[node][neighbor]['weight']
-                heapq.heappush(heap, (g_cost + edge_weight + heuristic[neighbor], g_cost + edge_weight, path + [neighbor]))
-    return None
-
-# Read graph from CSV
-df = pd.read_csv('graphAstar.csv')  # Columns: source, target, weight
-heuristic = pd.read_csv('heuristicAstar.csv', index_col=0).to_dict()['heuristic']  # Columns: node, heuristic
-
-G = nx.Graph()
-for _, r in df.iterrows():
-    G.add_edge(r['source'], r['target'], weight=r['weight'])
-
-start = input("Enter start node: ")
-goal = input("Enter goal node: ")
-
-path = astar(G, heuristic, start, goal)
-print("Path:", path)
-
-    """
-
-
-
-def astar4():
-    return """
-# Implement A* algorithm. Read undirected weighted graph and heuristic 
-# values from user.
-import networkx as nx
-import heapq
+from itertools import combinations
 
-def astar(graph, heuristic, start, goal):
-    heap = []
-    heapq.heappush(heap, (0 + heuristic[start], 0, [start]))
+# Load and preprocess dataset
+df = pd.read_csv("/content/Groceries_dataset.csv")
+transactions = df.groupby('Member_number')['itemDescription'].apply(set).tolist()
 
-    while heap:
-        f_cost, g_cost, path = heapq.heappop(heap)
-        node = path[-1]
-        if node == goal:
-            return path
-        for neighbor in graph.neighbors(node):
-            if neighbor not in path:
-                edge_weight = graph[node][neighbor]['weight']
-                heapq.heappush(heap, (g_cost + edge_weight + heuristic[neighbor], g_cost + edge_weight, path + [neighbor]))
-    return None
+# Support function
+def get_support(itemset):
+    return sum(itemset <= t for t in transactions) / len(transactions)
 
-G = nx.Graph()
-n = int(input("Enter number of edges: "))
-for _ in range(n):
-    u, v, w = input("Enter edge (node1 node2 weight): ").split()
-    G.add_edge(u, v, weight=int(w))
+# Initialize
+all_items = {item for t in transactions for item in t}
+frequent_itemsets = []
+k = 1
+candidates = [frozenset([item]) for item in all_items]
 
-heuristic = {}
-for node in G.nodes():
-    heuristic[node] = int(input(f"Enter heuristic for {node}: "))
+# Apriori loop
+while candidates:
+    valid_sets = {i: get_support(i) for i in candidates if get_support(i) >= 0.02}
+    if not valid_sets:
+        break
+    frequent_itemsets.append(valid_sets)
+    previous_level = list(valid_sets)
+    candidates = list({a | b for a in previous_level for b in previous_level if len(a | b) == k + 1})
+    k += 1
 
-start = input("Enter start node: ")
-goal = input("Enter goal node: ")
+# Print frequent itemsets
+for level_num, level in enumerate(frequent_itemsets, 1):
+    print(f"\nFrequent {level_num}-itemsets:")
+    for itemset, support in level.items():
+        print(f"{set(itemset)}: {support:.2f}")
 
-path = astar(G, heuristic, start, goal)
-print("Path:", path)
+# Generate and print association rules
+print("\nAssociation Rules:")
+for level in frequent_itemsets[1:]:
+    for itemset, sup in level.items():
+        for i in range(1, len(itemset)):
+            for lhs in combinations(itemset, i):
+                lhs = frozenset(lhs)
+                rhs = itemset - lhs
+                conf = sup / get_support(lhs)
+                if conf >= 0.5:
+                    print(f"{set(lhs)} → {set(rhs)} (Support: {sup:.2f}, Confidence: {conf:.2f})")
 
 
-    """
 
-def fs1():
-    return """
-# Implement Fuzzy set operations – union, intersection and complement. 
-# Demonstrate these operations with 3 fuzzy sets. 
 
-# Fuzzy sets
-A = {'x': 0.7, 'y': 0.3, 'z': 0.9}
-B = {'x': 0.5, 'y': 0.8, 'z': 0.4}
-C = {'x': 0.2, 'y': 0.6, 'z': 0.7}
 
-# Union
-union_abc = {key: max(A[key], B[key], C[key]) for key in A}
-print("A ∪ B ∪ C:", union_abc)
 
-# Intersection
-intersection_abc = {key: min(A[key], B[key], C[key]) for key in A}
-print("A ∩ B ∩ C:", intersection_abc)
 
-# Complements
-complement_a = {key: round(1 - A[key],2) for key in A}
-complement_b = {key: round(1 - B[key],2) for key in B}
-complement_c = {key: round(1 - C[key],2) for key in C}
-print("¬A:", complement_a)
-print("¬B:", complement_b)
-print("¬C:", complement_c)
+# FP-Growth Algorithm for Association Rule Mining
+import pandas as pd
+from mlxtend.frequent_patterns import fpgrowth, association_rules
+from mlxtend.preprocessing import TransactionEncoder
 
+# Load and preprocess the dataset
+df = pd.read_csv("/content/Groceries_dataset.csv")
+transactions = df.groupby('Member_number')['itemDescription'].apply(list).tolist()
 
-    """
+# Encode transactions for FP-Growth
+te = TransactionEncoder()
+encoded_data = te.fit(transactions).transform(transactions)
+df_encoded = pd.DataFrame(encoded_data, columns=te.columns_)
 
-def fs2():
-    return """
+# Apply FP-Growth algorithm
+frequent_itemsets = fpgrowth(df_encoded, min_support=0.02, use_colnames=True)
 
-# Fuzzy sets
-A = {'x': 0.7, 'y': 0.3, 'z': 0.9}
-B = {'x': 0.5, 'y': 0.8, 'z': 0.4}
+# Generate association rules
+rules = association_rules(frequent_itemsets, metric="confidence", min_threshold=0.5)
 
-# Union
-union_ab = {key: max(A[key], B[key]) for key in A}
-print("Union: ", union_ab)
+# Print results
+print("Frequent Itemsets:\n", frequent_itemsets)
 
-# Intersection
-intersection_ab = {key: min(A[key], B[key]) for key in A}
-print("Intersection: ", intersection_ab)
+print("\nAssociation Rules:")
+for _, row in rules.iterrows():
+    print(f"{set(row['antecedents'])} → {set(row['consequents'])} "
+          f"(Support: {row['support']:.2f}, Confidence: {row['confidence']:.2f})")
 
-# Complements
-complement_a = {key: round(1 - A[key], 2) for key in A}
-complement_b = {key: round(1 - B[key], 2) for key in B}
-print("Complement of A: ", complement_a)
-print("Complement of B: ", complement_b)
 
-# Complement of Union
-complement_union = {key: round(1 - union_ab[key], 2) for key in A}
 
-# Intersection of Complements
-intersection_complements = {key: min(complement_a[key], complement_b[key]) for key in A}
 
-# De Morgan's verification
-print("¬(A ∪ B):", complement_union)
-print("(¬A) ∩ (¬B):", intersection_complements)
 
-  """
 
 
-def fs3():
-    return """
 
-# Fuzzy sets
-A = {'x': 0.7, 'y': 0.3, 'z': 0.9}
-B = {'x': 0.5, 'y': 0.8, 'z': 0.4}
 
-# Union
-union_ab = {key: max(A[key], B[key]) for key in A}
-print("Union: ", union_ab)
 
-# Intersection
-intersection_ab = {key: min(A[key], B[key]) for key in A}
-print("Intersection: ", intersection_ab)
 
-# Complements
-complement_a = {key: round(1 - A[key], 2) for key in A}
-complement_b = {key: round(1 - B[key], 2) for key in B}
-print("Complement of A: ", complement_a)
-print("Complement of B: ", complement_b)
 
-# Complement of Intersection
-complement_intersection = {key: 1 - intersection_ab[key] for key in A}
+# K-Means Clustering for Customer Segmentation
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
 
-# Union of Complements
-union_complements = {key: max(complement_a[key], complement_b[key]) for key in A}
+# Load data
+df = pd.read_csv('/content/Mall_Customers.csv')
+X = df.iloc[:, [3, 4]].values  # Annual Income & Spending Score
 
-print("¬(A ∩ B):", complement_intersection)
-print("(¬A) ∪ (¬B):", union_complements)
-
-
-
-    """
-
-
-def tp1():
-    return """
-import re
-import nltk  
-from nltk.tokenize import word_tokenize
-from nltk.corpus import stopwords
-from spellchecker import SpellChecker
-
-# Download NLTK resources
-nltk.download('punkt')
-nltk.download('punkt_tab')
-nltk.download('stopwords')
-
-# Function to process text
-def process_text(file_path):
-    # Read file
-    with open(file_path, 'r') as file:
-        text = file.read()
-    text = re.sub(r'[^a-zA-Z\s]', '', text)
-    text = re.sub(r'\s+', ' ', text).strip()
-
-    # Convert to lowercase
-    text = text.lower()
-
-    # Tokenize text
-    tokens = word_tokenize(text)
-
-    # Remove stop words
-    stop_words = set(stopwords.words('english'))
-    tokens = [word for word in tokens if word not in stop_words]
-
-    # Correct misspelled words
-    spell = SpellChecker()
-    tokens = [spell.correction(word) for word in tokens]
-
-    return tokens
-
-# File path
-file_path = 'textDoc.txt'
-
-# Process and print the cleaned text
-processed_text = process_text(file_path)
-print("Processed Text:", " ".join(processed_text))
-
-
-    """
-
-
-def tp2():
-    return """  
-import re
-import nltk
-from nltk.tokenize import word_tokenize
-from nltk.corpus import stopwords
-from nltk.stem import PorterStemmer, WordNetLemmatizer
-from nltk.util import ngrams
-
-nltk.download('punkt')
-nltk.download('punkt_tab')
-nltk.download('stopwords')
-nltk.download('wordnet')
-
-def process_text(path):
-    with open(path, 'r') as file:
-        text = file.read()
-
-    # Clean text: remove non-letters, extra spaces, lowercase
-    text = re.sub(r'[^a-zA-Z\s]', '', text).lower()
-    text = re.sub(r'\s+', ' ', text)
-
-    tokens = word_tokenize(text)
-    stop_words = set(stopwords.words('english'))
-    tokens = [w for w in tokens if w not in stop_words]
-
-    stemmer = PorterStemmer()
-    stems = [stemmer.stem(w) for w in tokens]
-
-    lemmatizer = WordNetLemmatizer()
-    lemmas = [lemmatizer.lemmatize(w) for w in tokens]
-
-    trigrams = list(ngrams(lemmas, 3))
-
-    return text, stems, lemmas, trigrams
-
-# Run it
-text, stems, lemmas, trigrams = process_text('textDoc.txt')
-
-print("Text:", text[:200])
-print("Stemmed:", stems[:20])
-print("Lemmatized:", lemmas[:20])
-print("Trigrams:", trigrams[:10])
-
-    """
-
-def ohe1():
-    return """
-import re
-import nltk
-import numpy as np
-from nltk.tokenize import word_tokenize
-
-nltk.download('punkt')
-nltk.download('punkt_tab')
-
-# Read all text files
-files = ['file1.txt', 'file2.txt', 'file3.txt']
-text = ''
-for file in files:
-    with open(file, 'r', encoding='utf-8') as f:
-        text += f.read() + ' '
-
- # Clean text: remove non-letters, extra spaces, lowercase
-text = re.sub(r'[^a-zA-Z\s]', '', text)
-text = re.sub(r'\s+', ' ', text).strip()
-
-text=text.lower()
-
-# Tokenize
-tokens = word_tokenize(text)
-
-# Create vocabulary
-vocab = sorted(set(tokens))
-
-# One-hot encoding
-one_hot = np.zeros((len(tokens), len(vocab)), dtype=int)
-for i, word in enumerate(tokens):
-    one_hot[i, vocab.index(word)] = 1
-
-# Output
-print("Vocab size:", len(vocab))
-print("First 5 vocab words:", vocab[:5])
-print("One-hot matrix shape:", one_hot.shape)
-print("\nFirst 5 words and their one-hot:")
+# Elbow Method to find optimal clusters
+wcss = []
+for k in range(1, 11):
+    km = KMeans(n_clusters=k, init='k-means++', random_state=42, n_init=10)
+    km.fit(X)
+    wcss.append(km.inertia_)
+
+# Plot Elbow Graph
+plt.plot(range(1, 11), wcss)
+plt.title('Elbow Method')
+plt.xlabel('No. of Clusters')
+plt.ylabel('WCSS')
+plt.show()
+
+# Train KMeans with k=5 (from elbow)
+kmeans = KMeans(n_clusters=5, init='k-means++', random_state=42, n_init=10)
+y_pred = kmeans.fit_predict(X)
+
+# Plot clusters
+colors = ['blue', 'green', 'red', 'cyan', 'magenta']
 for i in range(5):
-    print(f"{tokens[i]}: {one_hot[i, :10]}...")
-    """
+    plt.scatter(X[y_pred == i, 0], X[y_pred == i, 1], s=50, c=colors[i], label=f'Cluster {i+1}')
 
-def bow1():
-    return """
-import re
-from nltk.tokenize import word_tokenize
-import nltk
-from collections import Counter
+# Plot centroids
+plt.scatter(kmeans.cluster_centers_[:, 0], kmeans.cluster_centers_[:, 1],
+            s=100, c='yellow', label='Centroids')
 
-# Download necessary NLTK data
-nltk.download('punkt')
-nltk.download('punkt_tab')
-
-# Read and combine text from all files
-files = ['file1.txt', 'file2.txt', 'file3.txt']
-text = ''
-for file in files:
-    with open(file, 'r', encoding='utf-8') as f:
-         text += f.read() + ' '
-
-text = re.sub(r'[^a-zA-Z\s]', '', text)
-text = re.sub(r'\s+', ' ', text).strip()
-
-text=text.lower()
-# Tokenize the text into words
-tokens = word_tokenize(text)
-
-# Create a Bag of Words (BoW) by counting word frequencies
-bow = Counter(tokens)
-
-# Print the results
-print("Bag of Words (word frequencies):")
-for word, count in bow.items():
-    print(f"{word}: {count}")
-
-    """
+plt.title('Customer Segments (K-Means)')
+plt.xlabel('Annual Income (k$)')
+plt.ylabel('Spending Score (1-100)')
+plt.legend()
+plt.show()
 
 
 
 
-def tfidf1():
-    return """
-import re
-from sklearn.feature_extraction.text import TfidfVectorizer
-
-# List of file names
-files = ['file1.txt', 'file2.txt', 'file3.txt']
-
-# Read and clean text from files
-texts = []
-for file in files:
-    with open(file, 'r', encoding='utf-8') as f:
-        text = f.read()
-        text = re.sub(r'[^a-zA-Z\s]', '', text)   # Keep only letters and spaces
-        text = re.sub(r'\s+', ' ', text).strip()  # Replace multiple spaces with single space
-        text = text.lower()                       # Convert to lowercase
-        texts.append(text)
-
-# Initialize TfidfVectorizer and fit texts
-vectorizer = TfidfVectorizer()
-tfidf_matrix = vectorizer.fit_transform(texts)
-
-# Get all words (features)
-words = vectorizer.get_feature_names_out()
-
-# Print TF-IDF values for each document
-for i in range(len(texts)):
-    print(f"\nTF-IDF for Document {i+1}:")
-    for j in range(len(words)):
-        value = tfidf_matrix[i, j]
-        if value > 0:
-            print(f"{words[j]}: {value:.4f}")
-
-    """
 
 
 
-def mlp1():
-    return """
 
 
+
+
+
+
+# DBSCAN Clustering for Customer Segmentation
+import pandas as pd
 import numpy as np
-import itertools
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.cluster import DBSCAN
+from sklearn.metrics import silhouette_score
+import seaborn as sns
 
-# Step activation
-def step(x):
-    return (x >= 0).astype(int)
+# Load and preprocess data
+df = pd.read_csv('/content/Mall_Customers.csv')
+df['Gender'] = df['Gender'].map({'Male': 0, 'Female': 1})
+df.drop(columns=['CustomerID'], inplace=True)
 
-# Forward pass
-def forward(X, W1, b1, W2, b2, W3, b3):
-    h1 = step(np.dot(X, W1) + b1)
-    h2 = step(np.dot(h1, W2) + b2)
-    out = step(np.dot(h2, W3) + b3)
-    return out
+# Normalize numerical features
+scaler = MinMaxScaler()
+df[['Age', 'Annual Income (k$)', 'Spending Score (1-100)']] = scaler.fit_transform(
+    df[['Age', 'Annual Income (k$)', 'Spending Score (1-100)']]
+)
 
-# Inputs & expected outputs
-N = int(input("Enter number of binary inputs: "))
-X = np.array(list(itertools.product([0, 1], repeat=N)))
-y = np.array([int(input(f"Expected output for {list(x)}: ")) for x in X]).reshape(-1, 1)
+# Apply DBSCAN
+model = DBSCAN(eps=0.13, min_samples=10)
+df['cluster'] = model.fit_predict(df[['Age', 'Annual Income (k$)', 'Spending Score (1-100)']])
 
-found = False
-steps = 0
+# Silhouette Score (excluding noise)
+mask = df['cluster'] != -1
+if mask.sum() > 1:
+    score = silhouette_score(df.loc[mask, ['Age', 'Annual Income (k$)', 'Spending Score (1-100)']], df['cluster'][mask])
+    print(f"Silhouette Score: {score:.2f}")
 
-while not found:
-    steps += 1
+# 2D plot (excluding noise)
+sns.scatterplot(data=df[mask], x='Annual Income (k$)', y='Spending Score (1-100)', hue='cluster', palette='viridis')
+plt.title("DBSCAN Clusters (Excl. Noise)")
+plt.show()
 
-    # Random weights and biases
-    W1 = np.random.uniform(-2, 2, (N, 2))
-    W2 = np.random.uniform(-2, 2, (2, 2))
-    W3 = np.random.uniform(-2, 2, (2, 1))
-    b1 = np.random.uniform(-3, 3)
-    b2 = np.random.uniform(-3, 3)
-    b3 = np.random.uniform(-3, 3)
 
-    # Prediction
-    y_pred = forward(X, W1, b1, W2, b2, W3, b3)
 
-    if np.array_equal(y_pred, y):
-        found = True
 
-# Results
-print(f"\n✅ Solution found in {steps} steps.")
-print(f"\nW1:\n{W1}\nW2:\n{W2}\nW3:\n{W3}")
-print(f"Biases: b1 = {b1}, b2 = {b2}, b3 = {b3}")
 
 
-    """
 
+#sql
+create database olp;
+use olp;
 
 
-def mlp2():
-    return """
 
-import numpy as np
-import itertools
+CREATE TABLE REGION (
+    REGION_ID INT PRIMARY KEY,
+    REGION_NAME VARCHAR(20)
+);
 
-# Step activation function
-def step(x):
-    return (x >= 0).astype(int)
+CREATE TABLE SUBREGION (
+    SUBREGION_ID INT PRIMARY KEY,
+    SUBREGION_NAME VARCHAR(30),
+    REGION_ID INT,
+    FOREIGN KEY (REGION_ID) REFERENCES REGION(REGION_ID)
+);
 
-# Forward pass function
-def forward(X, W1, b1, W2, b2):
-    hidden_layer = step(np.dot(X, W1) + b1)  # Hidden layer
-    output_layer = step(np.dot(hidden_layer, W2) + b2)  # Output layer
-    return output_layer
+CREATE TABLE WAREHOUSE (
+    CODE INT PRIMARY KEY,
+    SUBREGION_ID INT,
+    FOREIGN KEY (SUBREGION_ID) REFERENCES SUBREGION(SUBREGION_ID)
+);
 
-# Inputs & expected outputs
-X = np.array(list(itertools.product([0, 1], repeat=4)))  # 4 binary inputs
-print("Enter the expected outputs for each input combination (two binary outputs):")
-y = np.array([list(map(int, input(f"Expected output for {list(x)}: ").split())) for x in X])  # Expected outputs for 2 outputs
+CREATE TABLE BOOKS (
+    ISBN BIGINT PRIMARY KEY,
+    TITLE VARCHAR(45),
+    PRICE DECIMAL(10,2)
+);
 
-found = False
-steps = 0
+CREATE TABLE YEAR (
+    YEAR_ID INT PRIMARY KEY,
+    YEAR VARCHAR(4)
+);
 
-while not found:
-    steps += 1
+CREATE TABLE MONTH (
+    MONTH_ID INT PRIMARY KEY,
+    MONTH VARCHAR(15),
+    YEAR_ID INT,
+    FOREIGN KEY (YEAR_ID) REFERENCES YEAR(YEAR_ID)
+);
 
-    # Random weight and bias initialization
-    W1 = np.random.uniform(-2, 2, (4, 2))  # Weights from input layer to hidden layer
-    W2 = np.random.uniform(-2, 2, (2, 2))  # Weights from hidden layer to output layer
-    b1 = np.random.uniform(-3, 3, 2)  # Biases for hidden layer
-    b2 = np.random.uniform(-3, 3, 2)  # Biases for output layer
+CREATE TABLE DAY (
+	DAY_ID int primary key,
+    NUM_DAY INT ,
+    day varchar(25),
+    MONTH_ID INT,
+    FOREIGN KEY (MONTH_ID) REFERENCES MONTH(MONTH_ID)
+);
 
-    # Perform forward pass
-    y_pred = forward(X, W1, b1, W2, b2)
 
-    # Check if predictions match the expected outputs
-    if np.array_equal(y_pred, y):
-        found = True
 
-# Display results
-print(f"\n✅ Solution found in {steps} steps.")
-print(f"\nW1 (Input to Hidden Layer):\n{W1}")
-print(f"W2 (Hidden to Output Layer):\n{W2}")
-print(f"Biases: b1 = {b1}, b2 = {b2}")
+CREATE TABLE FACTS_TICKET (
+    SELL_BY_PRODUCT DOUBLE,
+    TICKET_NUMBER INT PRIMARY KEY,
+    BOOKS_ISBN BIGINT,
+    WAREHOUSE_CODE INT,
+    DAY_ID INT,
+    FOREIGN KEY (BOOKS_ISBN) REFERENCES BOOKS(ISBN),
+    FOREIGN KEY (WAREHOUSE_CODE) REFERENCES WAREHOUSE(CODE),
+    FOREIGN KEY (DAY_ID) REFERENCES DAY(DAY_ID)
+);
 
 
-    """
 
 
 
@@ -973,464 +358,245 @@ print(f"Biases: b1 = {b1}, b2 = {b2}")
 
 
 
-def mlp3():
-    return """
 
-import numpy as np
-import itertools
 
-# Sigmoid activation function
-def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
 
-# Derivative of sigmoid
-def sigmoid_derivative(x):
-    return x * (1 - x)
 
-# Forward pass
-def forward_pass(X, W1, b1, W2, b2, W3, b3):
-    z1 = np.dot(X, W1) + b1
-    a1 = sigmoid(z1)
 
-    z2 = np.dot(a1, W2) + b2
-    a2 = sigmoid(z2)
 
-    z3 = np.dot(a2, W3) + b3
-    output = sigmoid(z3)
 
-    return a1, a2, output
 
-# Input: number of binary inputs
-num_inputs = int(input("Enter number of binary inputs (N): "))
 
-# Generate all possible binary input combinations (2^N combinations)
-X = np.array(list(itertools.product([0, 1], repeat=num_inputs)))
 
-# Input: expected outputs for each input combination
-print("\nEnter expected output (0 or 1) for each input combination:")
-y_true = np.array([int(input(f"Input {list(x)}: ")) for x in X]).reshape(-1, 1)
 
-# Initialize weights and biases randomly
-np.random.seed(42)  # For reproducibility
-W1 = np.random.randn(num_inputs, 4)
-b1 = np.random.randn(4)
-W2 = np.random.randn(4, 3)
-b2 = np.random.randn(3)
-W3 = np.random.randn(3, 1)
-b3 = np.random.randn(1)
 
-# Training parameters
-epochs = 10000
-learning_rate = 0.5
 
-# Training loop
-for epoch in range(epochs):
-    # Forward pass
-    a1, a2, output = forward_pass(X, W1, b1, W2, b2, W3, b3)
 
-    # Compute error
-    error = y_true - output
 
-    # Backward pass
-    d_output = error * sigmoid_derivative(output)
 
-    error_hidden2 = d_output.dot(W3.T)
-    d_hidden2 = error_hidden2 * sigmoid_derivative(a2)
 
-    error_hidden1 = d_hidden2.dot(W2.T)
-    d_hidden1 = error_hidden1 * sigmoid_derivative(a1)
 
-    # Update weights and biases
-    W3 += a2.T.dot(d_output) * learning_rate
-    b3 += np.sum(d_output, axis=0) * learning_rate
 
-    W2 += a1.T.dot(d_hidden2) * learning_rate
-    b2 += np.sum(d_hidden2, axis=0) * learning_rate
 
-    W1 += X.T.dot(d_hidden1) * learning_rate
-    b1 += np.sum(d_hidden1, axis=0) * learning_rate
 
-    # (Optional) Print loss every 1000 epochs
-    if (epoch + 1) % 1000 == 0:
-        loss = np.mean(np.square(error))
-        print(f"Epoch {epoch+1}: Loss = {loss:.6f}")
 
-# Final predictions
-_, _, final_output = forward_pass(X, W1, b1, W2, b2, W3, b3)
 
-# Display input-output mapping
-print("\nInput -> Expected Output -> Predicted Output")
-for xi, yi, oi in zip(X, y_true, final_output):
-    print(f"{list(xi)} -> {yi[0]} -> {oi[0]:.4f}")
 
+-- region
+INSERT INTO region (region_id, region_name) VALUES (1, 'america');
+INSERT INTO region (region_id, region_name) VALUES (2, 'europa');
+INSERT INTO region (region_id, region_name) VALUES (3, 'asia');
+INSERT INTO region (region_id, region_name) VALUES (4, 'africa');
+INSERT INTO region (region_id, region_name) VALUES (5, 'oceania');
 
-    """
+-- subregion
+INSERT INTO subregion (subregion_id, region_id, subregion_name) VALUES (1, 1, 'north america');
+INSERT INTO subregion (subregion_id, region_id, subregion_name) VALUES (2, 1, 'central america');
+INSERT INTO subregion (subregion_id, region_id, subregion_name) VALUES (3, 1, 'caribe');
+INSERT INTO subregion (subregion_id, region_id, subregion_name) VALUES (4, 1, 'south america');
+INSERT INTO subregion (subregion_id, region_id, subregion_name) VALUES (5, 2, 'north of europe');
+INSERT INTO subregion (subregion_id, region_id, subregion_name) VALUES (6, 2, 'south of europe');
+INSERT INTO subregion (subregion_id, region_id, subregion_name) VALUES (7, 2, 'western europe');
+INSERT INTO subregion (subregion_id, region_id, subregion_name) VALUES (8, 2, 'eastern europe');
+INSERT INTO subregion (subregion_id, region_id, subregion_name) VALUES (9, 3, 'northern of asia');
+INSERT INTO subregion (subregion_id, region_id, subregion_name) VALUES (10, 3, 'southern asia');
 
+-- year
+INSERT INTO year (year_id, year) VALUES (1, '2017');
 
-def mlp4():
-    return """
+-- month
+INSERT INTO month (month_id, year_id, month) VALUES (1, 1, 'january');
+INSERT INTO month (month_id, year_id, month) VALUES (2, 1, 'february');
+INSERT INTO month (month_id, year_id, month) VALUES (3, 1, 'march');
+INSERT INTO month (month_id, year_id, month) VALUES (4, 1, 'april');
+INSERT INTO month (month_id, year_id, month) VALUES (5, 1, 'may');
+INSERT INTO month (month_id, year_id, month) VALUES (6, 1, 'june');
+INSERT INTO month (month_id, year_id, month) VALUES (7, 1, 'july');
+INSERT INTO month (month_id, year_id, month) VALUES (8, 1, 'august');
+INSERT INTO month (month_id, year_id, month) VALUES (9, 1, 'september');
+INSERT INTO month (month_id, year_id, month) VALUES (10, 1, 'october');
 
+-- day
+INSERT INTO day (day_id, month_id, day, num_day) VALUES (1, 1, 'sunday', 1);
+INSERT INTO day (day_id, month_id, day, num_day) VALUES (2, 1, 'monday', 2);
+INSERT INTO day (day_id, month_id, day, num_day) VALUES (3, 1, 'tuesday', 3);
+INSERT INTO day (day_id, month_id, day, num_day) VALUES (4, 1, 'wednesday', 4);
+INSERT INTO day (day_id, month_id, day, num_day) VALUES (5, 1, 'thursday', 5);
+INSERT INTO day (day_id, month_id, day, num_day) VALUES (6, 1, 'friday', 6);
+INSERT INTO day (day_id, month_id, day, num_day) VALUES (7, 1, 'saturday', 7);
+INSERT INTO day (day_id, month_id, day, num_day) VALUES (8, 1, 'sunday', 8);
+INSERT INTO day (day_id, month_id, day, num_day) VALUES (9, 1, 'monday', 9);
+INSERT INTO day (day_id, month_id, day, num_day) VALUES (10, 1, 'tuesday', 10);
 
-import numpy as np
-import itertools
+-- warehouse
+INSERT INTO warehouse (code, subregion_id) VALUES (1, 1);
+INSERT INTO warehouse (code, subregion_id) VALUES (2, 1);
+INSERT INTO warehouse (code, subregion_id) VALUES (3, 2);
+INSERT INTO warehouse (code, subregion_id) VALUES (4, 2);
+INSERT INTO warehouse (code, subregion_id) VALUES (5, 3);
+INSERT INTO warehouse (code, subregion_id) VALUES (6, 3);
+INSERT INTO warehouse (code, subregion_id) VALUES (7, 4);
+INSERT INTO warehouse (code, subregion_id) VALUES (8, 4);
+INSERT INTO warehouse (code, subregion_id) VALUES (9, 5);
+INSERT INTO warehouse (code, subregion_id) VALUES (10, 5);
 
-# ReLU activation function
-def relu(x):
-    return np.maximum(0, x)
+-- books
+INSERT INTO books (isbn, title, price) VALUES (9706279301, 'A Gentleman Never Keeps Score', 384.00);
+INSERT INTO books (isbn, title, price) VALUES (9728304802, 'Texas Glory', 94.50);
+INSERT INTO books (isbn, title, price) VALUES (9702833303, 'Rainy day friends', 45.00);
+INSERT INTO books (isbn, title, price) VALUES (9703859304, 'Crazy Rich Asians', 1234.50);
+INSERT INTO books (isbn, title, price) VALUES (9793937405, 'Tell me you are mine', 23.60);
+INSERT INTO books (isbn, title, price) VALUES (9729473006, 'The spy and the traitor', 200.00);
+INSERT INTO books (isbn, title, price) VALUES (9703746207, 'Paradaise Sky by Jose Lansdale', 145.00);
+INSERT INTO books (isbn, title, price) VALUES (9739482708, 'Meet Camaro from the Nigh Charter', 165.99);
+INSERT INTO books (isbn, title, price) VALUES (9706279309, 'Book 9 for A Gentleman', 344.00);
+INSERT INTO books (isbn, title, price) VALUES (9728304810, 'Book 10 for Texas', 84.50);
 
-# Derivative of ReLU
-def relu_derivative(x):
-    return np.where(x > 0, 1, 0)
 
-# Forward pass
-def forward_pass(X, weights1, bias1, weights2, bias2, weights3, bias3):
-    z1 = np.dot(X, weights1) + bias1
-    activation1 = relu(z1)
+-- Ticket 1: Multi-book (2 books) in north america, Jan 1
+INSERT INTO FACTS_TICKET (DAY_ID, WAREHOUSE_CODE, BOOKS_ISBN, SELL_BY_PRODUCT, TICKET_NUMBER) 
+VALUES (1, 1, 9706279301, 384.00, 1); -- A Gentleman Never Keeps Score
+INSERT INTO FACTS_TICKET (DAY_ID, WAREHOUSE_CODE, BOOKS_ISBN, SELL_BY_PRODUCT, TICKET_NUMBER) 
+VALUES (1, 1, 9728304802, 94.50, 2);  -- Texas Glory
 
-    z2 = np.dot(activation1, weights2) + bias2
-    activation2 = relu(z2)
+-- Ticket 2: Single book in central america, Jan 2
+INSERT INTO FACTS_TICKET (DAY_ID, WAREHOUSE_CODE, BOOKS_ISBN, SELL_BY_PRODUCT, TICKET_NUMBER) 
+VALUES (2, 3, 9702833303, 45.00, 3); -- Rainy day friends
 
-    z3 = np.dot(activation2, weights3) + bias3
-    output = relu(z3)
+-- Ticket 3: Multi-book (3 books) in caribe, Jan 3
+INSERT INTO FACTS_TICKET (DAY_ID, WAREHOUSE_CODE, BOOKS_ISBN, SELL_BY_PRODUCT, TICKET_NUMBER) 
+VALUES (3, 5, 9703859304, 1234.50, 4); -- Crazy Rich Asians
+INSERT INTO FACTS_TICKET (DAY_ID, WAREHOUSE_CODE, BOOKS_ISBN, SELL_BY_PRODUCT, TICKET_NUMBER) 
+VALUES (3, 5, 9793937405, 23.60, 5);   -- Tell me you are mine
+INSERT INTO FACTS_TICKET (DAY_ID, WAREHOUSE_CODE, BOOKS_ISBN, SELL_BY_PRODUCT, TICKET_NUMBER) 
+VALUES (3, 5, 9729473006, 200.00, 6);  -- The spy and the traitor
 
-    return z1, activation1, z2, activation2, z3, output
+-- Ticket 4: Single book in south america, Jan 4
+INSERT INTO FACTS_TICKET (DAY_ID, WAREHOUSE_CODE, BOOKS_ISBN, SELL_BY_PRODUCT, TICKET_NUMBER) 
+VALUES (4, 7, 9703746207, 145.00, 7); -- Paradaise Sky by Jose Lansdale
 
-# Input: number of binary inputs
-num_inputs = int(input("Enter number of binary inputs (N): "))
+-- Ticket 5: Multi-book (2 books) in north of europe, Jan 5
+INSERT INTO FACTS_TICKET (DAY_ID, WAREHOUSE_CODE, BOOKS_ISBN, SELL_BY_PRODUCT, TICKET_NUMBER) 
+VALUES (5, 9, 9739482708, 165.99, 8); -- Meet Camaro from the Nigh Charter
+INSERT INTO FACTS_TICKET (DAY_ID, WAREHOUSE_CODE, BOOKS_ISBN, SELL_BY_PRODUCT, TICKET_NUMBER) 
+VALUES (5, 9, 9706279309, 344.00, 9); -- Book 9 for A Gentleman
 
-# Generate all possible binary input combinations (2^N combinations)
-X = np.array(list(itertools.product([0, 1], repeat=num_inputs)))
+-- Ticket 6: Single book in western europe, Jan 6
+INSERT INTO FACTS_TICKET (DAY_ID, WAREHOUSE_CODE, BOOKS_ISBN, SELL_BY_PRODUCT, TICKET_NUMBER) 
+VALUES (6, 10, 9728304810, 84.50, 10); -- Book 10 for Texas
 
-# Input: expected outputs for each input combination
-print("\nEnter expected output (0 or 1) for each input combination:")
-y_true = np.array([int(input(f"Input {list(x)}: ")) for x in X]).reshape(-1, 1)
 
-# Initialize weights and biases randomly
-np.random.seed(42)  # For reproducibility
-weights1 = np.random.randn(num_inputs, 4)
-bias1 = np.random.randn(4)
-weights2 = np.random.randn(4, 3)
-bias2 = np.random.randn(3)
-weights3 = np.random.randn(3, 1)
-bias3 = np.random.randn(1)
 
-# Training parameters
-epochs = 10000
-learning_rate = 0.01  # Note: Lower learning rate for ReLU to avoid instability
 
-# Training loop
-for epoch in range(epochs):
-    # Forward pass
-    z1, activation1, z2, activation2, z3, output = forward_pass(X, weights1, bias1, weights2, bias2, weights3, bias3)
 
-    # Compute error
-    output_error = y_true - output
 
-    # Backward pass
-    delta_output = output_error * relu_derivative(z3)
 
-    error_hidden2 = delta_output.dot(weights3.T)
-    delta_hidden2 = error_hidden2 * relu_derivative(z2)
 
-    error_hidden1 = delta_hidden2.dot(weights2.T)
-    delta_hidden1 = error_hidden1 * relu_derivative(z1)
 
-    # Update weights and biases
-    weights3 += activation2.T.dot(delta_output) * learning_rate
-    bias3 += np.sum(delta_output, axis=0) * learning_rate
 
-    weights2 += activation1.T.dot(delta_hidden2) * learning_rate
-    bias2 += np.sum(delta_hidden2, axis=0) * learning_rate
+-- Query 1: Total Daily Sales by Book and Subregion
 
-    weights1 += X.T.dot(delta_hidden1) * learning_rate
-    bias1 += np.sum(delta_hidden1, axis=0) * learning_rate
+SELECT 
+    sr.SUBREGION_NAME AS SUBREGION,
+    d.NUM_DAY AS DAY,
+    b.ISBN AS ISBN,
+    b.TITLE AS TITLE,
+    SUM(ft.SELL_BY_PRODUCT) AS TOTAL_SALES
+FROM FACTS_TICKET ft
+JOIN BOOKS b ON ft.BOOKS_ISBN = b.ISBN
+JOIN WAREHOUSE w ON ft.WAREHOUSE_CODE = w.CODE
+JOIN SUBREGION sr ON w.SUBREGION_ID = sr.SUBREGION_ID
+JOIN DAY d ON ft.DAY_ID = d.DAY_ID
+GROUP BY sr.SUBREGION_NAME, d.NUM_DAY, b.ISBN, b.TITLE
+ORDER BY sr.SUBREGION_NAME, d.NUM_DAY, b.ISBN;
 
-    # (Optional) Print loss every 1000 epochs
-    if (epoch + 1) % 1000 == 0:
-        loss = np.mean(np.square(output_error))
-        print(f"Epoch {epoch+1}: Loss = {loss:.6f}")
 
-# Final predictions after training
-_, _, _, _, _, final_output = forward_pass(X, weights1, bias1, weights2, bias2, weights3, bias3)
+-- Query 2: Annual Sales per Book
+SELECT 
+    y.YEAR AS YEAR,
+    b.ISBN AS ISBN,
+    b.TITLE AS TITLE,
+    SUM(ft.SELL_BY_PRODUCT) AS SALES_AMOUNT
+FROM FACTS_TICKET ft
+JOIN BOOKS b ON ft.BOOKS_ISBN = b.ISBN
+JOIN DAY d ON ft.DAY_ID = d.DAY_ID
+JOIN MONTH m ON d.MONTH_ID = m.MONTH_ID
+JOIN YEAR y ON m.YEAR_ID = y.YEAR_ID
+GROUP BY y.YEAR, b.ISBN, b.TITLE
+ORDER BY y.YEAR, b.ISBN;
 
-# Display input-output mapping
-print("\nInput -> Expected Output -> Predicted Output")
-for input_vec, true_label, prediction in zip(X, y_true, final_output):
-    print(f"{list(input_vec)} -> {true_label[0]} -> {prediction[0]:.4f}")
 
+-- Query 3: Region with the Most Transactions in January 2017 (Adjusted from October)
+SELECT 
+    r.REGION_NAME AS REGIONNAME,
+    COUNT(ft.TICKET_NUMBER) AS NO_TRANSACTIONS
+FROM FACTS_TICKET ft
+JOIN WAREHOUSE w ON ft.WAREHOUSE_CODE = w.CODE
+JOIN SUBREGION sr ON w.SUBREGION_ID = sr.SUBREGION_ID
+JOIN REGION r ON sr.REGION_ID = r.REGION_ID
+JOIN DAY d ON ft.DAY_ID = d.DAY_ID
+JOIN MONTH m ON d.MONTH_ID = m.MONTH_ID
+JOIN YEAR y ON m.YEAR_ID = y.YEAR_ID
+WHERE m.MONTH = 'january' AND y.YEAR = '2017'
+GROUP BY r.REGION_NAME
+ORDER BY NO_TRANSACTIONS DESC
+LIMIT 1;
 
-    """
 
+-- Query 4: Average Sale per Ticket per Month in Each Region
 
+SELECT 
+    r.REGION_NAME AS REGIONAME,
+    m.MONTH AS MONTH,
+    AVG(ft.SELL_BY_PRODUCT) AS AVG_INVOICE
+FROM FACTS_TICKET ft
+JOIN WAREHOUSE w ON ft.WAREHOUSE_CODE = w.CODE
+JOIN SUBREGION sr ON w.SUBREGION_ID = sr.SUBREGION_ID
+JOIN REGION r ON sr.REGION_ID = r.REGION_ID
+JOIN DAY d ON ft.DAY_ID = d.DAY_ID
+JOIN MONTH m ON d.MONTH_ID = m.MONTH_ID
+GROUP BY r.REGION_NAME, m.MONTH
+ORDER BY r.REGION_NAME, m.MONTH;
 
 
-def mlp5():
-    return """
 
 
-import numpy as np
-import itertools
+-- Query 5: Books Bought Together More Frequently
 
-# Tanh activation function
-def tanh(x):
-    return np.tanh(x)
+SELECT 
+    b1.ISBN AS ISBN1,
+    b2.ISBN AS ISBN2,
+    COUNT(DISTINCT ft1.TICKET_NUMBER) AS CO_PURCHASE_COUNT
+FROM FACTS_TICKET ft1
+JOIN FACTS_TICKET ft2 ON ft1.TICKET_NUMBER = ft2.TICKET_NUMBER AND ft1.BOOKS_ISBN < ft2.BOOKS_ISBN
+JOIN BOOKS b1 ON ft1.BOOKS_ISBN = b1.ISBN
+JOIN BOOKS b2 ON ft2.BOOKS_ISBN = b2.ISBN
+GROUP BY b1.ISBN, b2.ISBN
+ORDER BY CO_PURCHASE_COUNT DESC
+LIMIT 5;
 
-# Derivative of Tanh
-def tanh_derivative(x):
-    return 1 - np.tanh(x) ** 2
 
-# Forward pass
-def forward_pass(X, weights1, bias1, weights2, bias2, weights3, bias3):
-    z1 = np.dot(X, weights1) + bias1
-    activation1 = tanh(z1)
 
-    z2 = np.dot(activation1, weights2) + bias2
-    activation2 = tanh(z2)
 
-    z3 = np.dot(activation2, weights3) + bias3
-    output = tanh(z3)
 
-    return z1, activation1, z2, activation2, z3, output
+-- Dice: Total sales for books priced between $100 and $500 in america and europa, January 2017
 
-# Input: number of binary inputs
-num_inputs = int(input("Enter number of binary inputs (N): "))
-
-# Generate all possible binary input combinations (2^N combinations)
-X = np.array(list(itertools.product([0, 1], repeat=num_inputs)))
-
-# Input: expected outputs for each input combination
-print("\nEnter expected output (0 or 1) for each input combination:")
-y_true = np.array([int(input(f"Input {list(x)}: ")) for x in X]).reshape(-1, 1)
-
-# Initialize weights and biases randomly
-np.random.seed(42)  # For reproducibility
-weights1 = np.random.randn(num_inputs, 4)
-bias1 = np.random.randn(4)
-
-weights2 = np.random.randn(4, 3)
-bias2 = np.random.randn(3)
-
-weights3 = np.random.randn(3, 1)
-bias3 = np.random.randn(1)
-
-# Training parameters
-epochs = 10000
-learning_rate = 0.01  # Tanh works well with smaller learning rates
-
-# Training loop
-for epoch in range(epochs):
-    # Forward pass
-    z1, activation1, z2, activation2, z3, output = forward_pass(X, weights1, bias1, weights2, bias2, weights3, bias3)
-
-    # Compute error
-    output_error = y_true - output
-
-    # Backward pass
-    delta_output = output_error * tanh_derivative(z3)
-
-    error_hidden2 = delta_output.dot(weights3.T)
-    delta_hidden2 = error_hidden2 * tanh_derivative(z2)
-
-    error_hidden1 = delta_hidden2.dot(weights2.T)
-    delta_hidden1 = error_hidden1 * tanh_derivative(z1)
-
-    # Update weights and biases
-    weights3 += activation2.T.dot(delta_output) * learning_rate
-    bias3 += np.sum(delta_output, axis=0) * learning_rate
-
-    weights2 += activation1.T.dot(delta_hidden2) * learning_rate
-    bias2 += np.sum(delta_hidden2, axis=0) * learning_rate
-
-    weights1 += X.T.dot(delta_hidden1) * learning_rate
-    bias1 += np.sum(delta_hidden1, axis=0) * learning_rate
-
-    # (Optional) Print loss every 1000 epochs
-    if (epoch + 1) % 1000 == 0:
-        loss = np.mean(np.square(output_error))
-        print(f"Epoch {epoch+1}: Loss = {loss:.6f}")
-
-# Final predictions after training
-_, _, _, _, _, final_output = forward_pass(X, weights1, bias1, weights2, bias2, weights3, bias3)
-
-# Display input-output mapping
-print("\nInput -> Expected Output -> Predicted Output")
-for input_vec, true_label, prediction in zip(X, y_true, final_output):
-    print(f"{list(input_vec)} -> {true_label[0]} -> {prediction[0]:.4f}")
-
-
-    """
-
-
-
-def nim1():
-    return """
-#computer wins or draws
-def minimax(sticks, is_maximizing, memo={}):
-    # Create unique key for memoization
-    key = (sticks, is_maximizing)
-    if key in memo:
-        return memo[key]
-    
-    # Base case - exactly 1 stick left (next player must take it and lose)
-    if sticks == 1:
-        return -1 if is_maximizing else 1
-    
-    # Base case - no sticks left (previous player took the last one and lost)
-    if sticks <= 0:
-        return 1 if is_maximizing else -1
-        
-    if is_maximizing:
-        # Computer's turn - try to maximize score
-        best_val = -float('inf')
-        for move in range(1, min(4, sticks + 1)):
-            val = minimax(sticks - move, False, memo)
-            best_val = max(best_val, val)
-        memo[key] = best_val
-        return best_val
-    else:
-        # Player's turn - they try to minimize score
-        best_val = float('inf')
-        for move in range(1, min(4, sticks + 1)):
-            val = minimax(sticks - move, True, memo)
-            best_val = min(best_val, val)
-        memo[key] = best_val
-        return best_val
-
-def find_best_move(sticks):
-    best_score = -float('inf')
-    best_move = 1
-    
-    for move in range(1, min(4, sticks + 1)):
-        score = minimax(sticks - move, False, {})
-        if score > best_score:
-            best_score = score
-            best_move = move
-    
-    return best_move
-
-def nim_game_computer_wins():
-    sticks = int(input("Enter number of sticks to start with: "))
-    current_player = input("Who goes first? (p for player/c for computer): ").lower()
-    
-    while sticks > 0:
-        print(f"\nSticks remaining: {sticks}")
-        
-        if current_player == 'p':
-            # Player's turn
-            while True:
-                try:
-                    move = int(input("How many sticks do you take? (1-3): "))
-                    if 1 <= move <= 3 and move <= sticks:
-                        break
-                    print("Invalid move! Take 1-3 sticks.")
-                except ValueError:
-                    print("Please enter a number.")
-            
-            sticks -= move
-            if sticks == 0:
-                print("You took the last stick. You lose!")
-            current_player = 'c'
-            
-        else:
-            # Computer's turn
-            move = find_best_move(sticks)
-            print(f"Computer takes {move} stick(s).")
-            sticks -= move
-            if sticks == 0:
-                print("Computer took the last stick. Computer loses!")
-            current_player = 'p'
-
-if __name__ == "__main__":
-    print("Nim Game - Computer plays to win!")
-    nim_game_computer_wins()
-
-    """
-
-
-
-def nim2():
-    return """
-#computer loses or draws
-def minimax(sticks, is_maximizing, memo={}):
-    # Create unique key for memoization
-    key = (sticks, is_maximizing)
-    if key in memo:
-        return memo[key]
-    
-    # Base case - exactly 1 stick left (next player must take it and lose)
-    if sticks == 1:
-        return -1 if is_maximizing else 1
-    
-    # Base case - no sticks left (previous player took the last one and lost)
-    if sticks <= 0:
-        return 1 if is_maximizing else -1
-        
-    if is_maximizing:
-        # Computer's turn - try to minimize score (to lose)
-        best_val = float('inf')
-        for move in range(1, min(4, sticks + 1)):
-            val = minimax(sticks - move, False, memo)
-            best_val = min(best_val, val)
-        memo[key] = best_val
-        return best_val
-    else:
-        # Player's turn - they try to maximize score
-        best_val = -float('inf')
-        for move in range(1, min(4, sticks + 1)):
-            val = minimax(sticks - move, True, memo)
-            best_val = max(best_val, val)
-        memo[key] = best_val
-        return best_val
-
-def find_worst_move(sticks):
-    worst_score = float('inf')
-    worst_move = 1
-    
-    for move in range(1, min(4, sticks + 1)):
-        score = minimax(sticks - move, False, {})
-        if score < worst_score:
-            worst_score = score
-            worst_move = move
-    
-    return worst_move
-
-def nim_game_computer_loses():
-    sticks = int(input("Enter number of sticks to start with: "))
-    current_player = input("Who goes first? (p for player/c for computer): ").lower()
-    
-    while sticks > 0:
-        print(f"\nSticks remaining: {sticks}")
-        
-        if current_player == 'p':
-            # Player's turn
-            while True:
-                try:
-                    move = int(input("How many sticks do you take? (1-3): "))
-                    if 1 <= move <= 3 and move <= sticks:
-                        break
-                    print("Invalid move! Take 1-3 sticks.")
-                except ValueError:
-                    print("Please enter a number.")
-            
-            sticks -= move
-            if sticks == 0:
-                print("You took the last stick. You lose!")
-            current_player = 'c'
-            
-        else:
-            # Computer's turn - choose worst move
-            move = find_worst_move(sticks)
-            print(f"Computer takes {move} stick(s).")
-            sticks -= move
-            if sticks == 0:
-                print("Computer took the last stick. Computer loses!")
-            current_player = 'p'
-
-if __name__ == "__main__":
-    print("Nim Game - Computer plays to lose!")
-    nim_game_computer_loses()
-
-
-    """
-
-
+SELECT 
+    r.REGION_NAME,
+    m.MONTH,
+    b.TITLE,
+    SUM(ft.SELL_BY_PRODUCT) AS TOTAL_SALES
+FROM FACTS_TICKET ft
+JOIN BOOKS b ON ft.BOOKS_ISBN = b.ISBN
+JOIN WAREHOUSE w ON ft.WAREHOUSE_CODE = w.CODE
+JOIN SUBREGION sr ON w.SUBREGION_ID = sr.SUBREGION_ID
+JOIN REGION r ON sr.REGION_ID = r.REGION_ID
+JOIN DAY d ON ft.DAY_ID = d.DAY_ID
+JOIN MONTH m ON d.MONTH_ID = m.MONTH_ID
+JOIN YEAR y ON m.YEAR_ID = y.YEAR_ID
+WHERE b.PRICE BETWEEN 100 AND 500
+AND r.REGION_NAME IN ('america', 'europa')
+AND m.MONTH = 'january'
+AND y.YEAR = '2017'
+GROUP BY r.REGION_NAME, m.MONTH, b.TITLE
+ORDER BY r.REGION_NAME, m.MONTH, TOTAL_SALES DESC;
